@@ -1140,6 +1140,7 @@ func (cli *DockerCli) CmdHistory(args ...string) error {
 	cmd := cli.Subcmd("history", "IMAGE", "Show the history of an image", true)
 	quiet := cmd.Bool([]string{"q", "-quiet"}, false, "Only show numeric IDs")
 	noTrunc := cmd.Bool([]string{"#notrunc", "-no-trunc"}, false, "Don't truncate output")
+	useTimestamps := cmd.Bool([]string{"t", "-timestamps"}, false, "Show created date as timestamps")
 	cmd.Require(flag.Exact, 1)
 
 	utils.ParseFlags(cmd, args, true)
@@ -1168,7 +1169,11 @@ func (cli *DockerCli) CmdHistory(args ...string) error {
 				fmt.Fprintf(w, "%s\t", common.TruncateID(outID))
 			}
 
-			fmt.Fprintf(w, "%s ago\t", units.HumanDuration(time.Now().UTC().Sub(time.Unix(out.GetInt64("Created"), 0))))
+			if *useTimestamps {
+				fmt.Fprintf(w, "%s ago\t", time.Unix(out.GetInt64("Created"), 0));
+			} else {
+				fmt.Fprintf(w, "%s ago\t", units.HumanDuration(time.Now().UTC().Sub(time.Unix(out.GetInt64("Created"), 0))));
+			}
 
 			if *noTrunc {
 				fmt.Fprintf(w, "%s\t", out.Get("CreatedBy"))
